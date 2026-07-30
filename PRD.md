@@ -1,6 +1,6 @@
 # PRD — Consulta de CNPJ
 
-Data de Atualização: 30-07-2026_Versão 1.00
+Data de Atualização: 30-07-2026_Versão 1.02
 
 ## Problema
 
@@ -66,6 +66,13 @@ usuários.
   (slate + teal, usada antes do redesign). A escolha persiste em
   `localStorage`. Ambas são temas escuros — a troca é só de paleta de cor,
   não estrutura, tipografia ou espaçamento.
+- Botão "Limpar" (ao lado do "Consultar"): reseta o campo de busca, o
+  resultado e qualquer erro exibido, voltando ao estado inicial vazio.
+- Botão "Exportar PDF" (na barra de ações, só aparece com resultado
+  carregado): abre o diálogo de impressão nativo do navegador
+  (`window.print()`) com um layout ajustado — sem barra de busca, sem
+  botões, cores preto-sobre-branco — para o usuário salvar como PDF. Não
+  usa biblioteca externa.
 
 ### Fora do escopo (por decisão, não por esquecimento)
 

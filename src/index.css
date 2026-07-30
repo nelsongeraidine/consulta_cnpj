@@ -79,3 +79,22 @@
     transition: none;
   }
 }
+
+/* Exportar PDF usa window.print() (sem lib externa) — aqui só força as
+   variáveis de cor pro par preto-sobre-branco, poupando tinta e mantendo
+   legibilidade no papel, independente de qual tema estava ativo na tela.
+   Elementos marcados com print:hidden (Tailwind) somem nesse momento. */
+@media print {
+  [data-theme] {
+    --c-bg-rgb: 255, 255, 255;
+    --c-surface-rgb: 255, 255, 255;
+    --c-text-rgb: 20, 20, 20;
+    --c-support-rgb: 90, 90, 90;
+    --c-accent1-rgb: 90, 90, 90;
+    --c-accent2-rgb: 90, 90, 90;
+    --c-accent3-rgb: 90, 90, 90;
+  }
+  .animate-rise-in {
+    animation: none;
+  }
+}

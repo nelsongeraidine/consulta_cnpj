@@ -20,6 +20,9 @@ adicionar no futuro, sem precisar de deploy.
   de valores simples, listas de objetos (sócios, inscrições estaduais...).
 - Contador de campos preenchidos, botão de copiar o JSON completo e opção
   de ver o JSON bruto.
+- Botão "Limpar" para resetar a busca e o resultado.
+- Botão "Exportar PDF" (usa o diálogo de impressão nativo do navegador,
+  sem biblioteca externa).
 - Alternância entre duas paletas de tema (persistida no navegador).
 
 ## Rodando localmente

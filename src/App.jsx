@@ -34,6 +34,17 @@ const IconMoon = (p) => (
     <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
   </svg>
 );
+const IconTrash = (p) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...p}>
+    <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z" />
+  </svg>
+);
+const IconFilePdf = (p) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...p}>
+    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+    <path d="M14 2v6h6" />
+  </svg>
+);
 
 // ───────────────────────── Helpers de formatação ─────────────────────────
 function onlyDigits(s) {
@@ -352,12 +363,28 @@ export default function App() {
     setTimeout(() => setCopied(false), 1800);
   };
 
+  const handleClear = () => {
+    setCnpjInput("");
+    setData(null);
+    setError(null);
+    setShowRaw(false);
+    setCopied(false);
+  };
+
+  // Exporta via diálogo de impressão nativo do navegador (o usuário escolhe
+  // "Salvar como PDF" ali) — sem biblioteca externa, o CSS @media print em
+  // index.css cuida de esconder a UI de busca e ajustar as cores pro papel.
+  const handleExportPdf = () => {
+    if (!data) return;
+    window.print();
+  };
+
   return (
     <div data-theme={theme} className="min-h-screen bg-ink text-lavender font-sans transition-colors duration-300">
-      <div className="max-w-3xl mx-auto px-5 sm:px-10 py-8 sm:py-16">
+      <div className="max-w-4xl xl:max-w-5xl mx-auto px-5 sm:px-10 py-8 sm:py-16">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between gap-3 mb-2">
+          <div className="flex items-center justify-between gap-3 mb-2 print:hidden">
             <div className="flex items-center gap-2 text-support text-xs font-mono uppercase tracking-widest">
               <span className="w-1.5 h-1.5 rounded-full bg-support animate-pulse" />
               Receita Federal · Dados Públicos
@@ -381,7 +408,7 @@ export default function App() {
         </div>
 
         {/* Barra de busca */}
-        <div className="rounded-2xl border border-support/15 bg-surface p-3 sm:p-4 mb-6">
+        <div className="rounded-2xl border border-support/15 bg-surface p-3 sm:p-4 mb-6 print:hidden">
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <IconSearch className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-lavender/40" />
@@ -408,6 +435,16 @@ export default function App() {
                 "Consultar"
               )}
             </button>
+            {(cnpjInput || data || error) && (
+              <button
+                onClick={handleClear}
+                title="Limpar busca e resultado"
+                className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-ink border border-support/25 hover:bg-support/10 text-sm font-medium text-lavender/70 transition"
+              >
+                <IconTrash className="w-3.5 h-3.5" />
+                Limpar
+              </button>
+            )}
           </div>
         </div>
 
@@ -454,7 +491,7 @@ export default function App() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-support/15">
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 pt-4 border-t border-support/15">
                 <SummaryField label="CNPJ" value={summary.cnpj} mono />
                 <SummaryField label="CNAE" value={summary.cnae} />
                 <SummaryField label="Cidade/UF" value={summary.cidadeUf} />
@@ -470,7 +507,7 @@ export default function App() {
             </div>
 
             {/* Barra de ações / contador */}
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-support/15 bg-surface px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-support/15 bg-surface px-4 py-3 print:hidden">
               <div className="text-xs font-mono text-lavender/60">
                 <span className="text-support font-semibold">{stats.filled}</span>
                 <span> / {stats.total} campos preenchidos</span>
@@ -494,12 +531,19 @@ export default function App() {
                   <IconCode className="w-3.5 h-3.5" />
                   {showRaw ? "Ocultar JSON" : "Ver JSON bruto"}
                 </button>
+                <button
+                  onClick={handleExportPdf}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface border border-support/15 hover:bg-support/10 text-xs font-medium transition"
+                >
+                  <IconFilePdf className="w-3.5 h-3.5" />
+                  Exportar PDF
+                </button>
               </div>
             </div>
 
             {/* JSON bruto */}
             {showRaw && (
-              <pre className="rounded-2xl border border-support/15 bg-ink p-4 text-xs font-mono text-violet-light overflow-x-auto max-h-96 overflow-y-auto">
+              <pre className="rounded-2xl border border-support/15 bg-ink p-4 text-xs font-mono text-violet-light overflow-x-auto max-h-96 overflow-y-auto print:hidden">
                 {JSON.stringify(data, null, 2)}
               </pre>
             )}

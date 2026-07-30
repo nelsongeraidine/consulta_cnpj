@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Data de Atualização: 30-07-2026_Versão 1.00
+Data de Atualização: 30-07-2026_Versão 1.02
 
 ## Visão geral
 
@@ -22,6 +22,9 @@ Tudo vive em `src/App.jsx` (sem roteamento, sem estado global):
 - `App` — estado, fetch, e o tema (toggle violeta/clássico via
   `data-theme` + variáveis CSS em `src/index.css`, persistido em
   `localStorage`).
+- Exportar PDF usa `window.print()` nativo (sem lib) + CSS `@media print`
+  em `src/index.css`, que força cores preto-sobre-branco e esconde os
+  elementos marcados com `print:hidden`.
 - Stack: Vite + React 19 + Tailwind CSS v3 (config clássica, não v4).
 - Não há mock de dados dentro de `src/` — dado de exemplo para testar em
   Artifact fica fora do projeto real.
