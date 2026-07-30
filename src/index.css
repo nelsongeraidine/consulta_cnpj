@@ -1,3 +1,81 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Paletas de tema: os tokens abaixo alimentam as cores "ink", "surface",
+   "lavender", "support" e "violet.*" do tailwind.config.js. Trocar o atributo
+   data-theme na raiz troca a cor resultante de toda a UI sem duplicar classes. */
+/* data-theme fica no <div> raiz do App, não no <html> — por isso os
+   seletores abaixo são atributo simples, não :root[data-theme=...]. */
+:root,
+[data-theme="violet"] {
+  --c-bg-rgb: 0, 0, 10;
+  --c-surface-rgb: 18, 18, 28;
+  --c-text-rgb: 245, 245, 255;
+  --c-support-rgb: 150, 150, 255;
+  --c-accent1-rgb: 75, 0, 255;
+  --c-accent2-rgb: 100, 100, 255;
+  --c-accent3-rgb: 200, 200, 255;
+}
+
+/* Paleta clássica (slate + teal) — a que a UI usava antes do redesign. */
+[data-theme="classic"] {
+  --c-bg-rgb: 2, 6, 23;
+  --c-surface-rgb: 15, 23, 42;
+  --c-text-rgb: 241, 245, 249;
+  --c-support-rgb: 45, 212, 191;
+  --c-accent1-rgb: 20, 184, 166;
+  --c-accent2-rgb: 45, 212, 191;
+  --c-accent3-rgb: 94, 234, 212;
+}
+
+@layer components {
+  /* CTA principal: gradiente do acento escuro pro claro. Orientado para que
+     o texto (centralizado no botão) sempre recaia sobre a metade clara,
+     evitando texto escuro sobre a ponta escura do gradiente (baixo contraste). */
+  .btn-cta {
+    background-image: linear-gradient(
+      90deg,
+      rgb(var(--c-accent1-rgb)) 0%,
+      rgb(var(--c-accent2-rgb)) 28%,
+      rgb(var(--c-accent3-rgb)) 55%,
+      rgb(var(--c-accent3-rgb)) 100%
+    );
+    background-size: 160% 100%;
+    background-position: 0% 0%;
+    color: rgb(var(--c-bg-rgb));
+    transition: background-position 0.35s ease;
+  }
+  .btn-cta:hover:not(:disabled) {
+    background-position: 100% 0%;
+  }
+  .btn-cta:disabled {
+    background-image: none;
+  }
+}
+
+@layer utilities {
+  .animate-rise-in {
+    animation: rise-in 0.4s ease-out both;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise-in {
+    animation: none;
+  }
+  .btn-cta {
+    transition: none;
+  }
+}

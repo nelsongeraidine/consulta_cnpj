@@ -1,90 +1,65 @@
 # CLAUDE.md
 
-Guia para trabalhar neste repositório com Claude Code.
+Data de Atualização: 30-07-2026_Versão 1.00
 
-## O que é
+## Visão geral
 
-SPA em React que consulta dados de CNPJ na API pública `publica.cnpj.ws` e
-renderiza o resultado: um card-resumo com os campos mais relevantes, e uma
-seção que renderiza **qualquer** campo retornado pela API dinamicamente
-(inclusive campos novos que a API venha a adicionar no futuro), sem precisar
-tocar no código.
+SPA em React que consulta CNPJ na API pública `publica.cnpj.ws` e mostra o
+resultado com um resumo curado e uma seção que exibe **qualquer** campo
+retornado pela API, de forma recursiva e automática, sem precisar de deploy
+novo quando a API adiciona campos.
 
-## Stack e comandos
+## Arquitetura em uma página
 
-- Vite + React 19, Tailwind CSS v3 (config clássica: `tailwind.config.js` +
-  `postcss.config.js` + diretivas `@tailwind` em `src/index.css`).
-- Sem backend, sem variáveis de ambiente, sem autenticação.
-- `npm run dev` — servidor de desenvolvimento (http://localhost:5173)
-- `npm run build` — build de produção em `dist/`
-- `npm run preview` — serve o build de produção localmente
-- `npm run lint` — oxlint
+Tudo vive em `src/App.jsx` (sem roteamento, sem estado global):
+- Helpers de formatação (`maskCNPJ`, `formatCNPJValue`, `formatCEP`,
+  `formatDateValue`, `formatCurrencyBRL`) — decidem o formato pelo **nome
+  da chave** via regex, nunca por lista fixa de campos conhecidos.
+- `DynamicObject`/`DynamicValue` — renderizador recursivo que desenha
+  qualquer objeto/array retornado pela API.
+- `buildSummary` — único trecho com conhecimento do shape específico da
+  API `cnpj.ws`; é aqui que se ajusta se a API mudar nomes de campo.
+- `App` — estado, fetch, e o tema (toggle violeta/clássico via
+  `data-theme` + variáveis CSS em `src/index.css`, persistido em
+  `localStorage`).
+- Stack: Vite + React 19 + Tailwind CSS v3 (config clássica, não v4).
+- Não há mock de dados dentro de `src/` — dado de exemplo para testar em
+  Artifact fica fora do projeto real.
 
-## Arquitetura (tudo em `src/App.jsx`)
+## Escopo do projeto
 
-O projeto é intencionalmente um arquivo único de componente — não há
-roteamento, estado global, nem chamadas a múltiplos endpoints. Principais
-blocos, de cima para baixo:
+Ver @PRD.md para o que está dentro/fora do escopo, requisitos não-
+funcionais e limites conhecidos. Nunca implementar algo listado como "fora
+do escopo" em @PRD.md sem antes confirmar com o usuário (ver regra 5).
 
-1. **Ícones** — SVGs inline, sem lib de ícones externa.
-2. **Helpers de formatação** (`onlyDigits`, `maskCNPJ`, `formatCNPJValue`,
-   `formatCEP`, `formatDateValue`, `formatCurrencyBRL`, `labelize`,
-   `formatLeaf`) — formatam valores folha (não-objeto) com base no **nome da
-   chave** e no **tipo do valor**. Ex.: qualquer chave contendo `cnpj` com 14
-   dígitos vira `00.000.000/0000-00`; qualquer chave contendo `capital` vira
-   moeda BRL; strings no formato `YYYY-MM-DD...` viram `DD/MM/AAAA`.
-3. **`countLeaves`** — percorre o JSON recursivamente e conta quantos campos
-   folha estão preenchidos vs. total, usado no contador "X / Y campos
-   preenchidos".
-4. **`DynamicObject` / `DynamicValue`** — o renderizador recursivo. Decide
-   como desenhar qualquer valor: objeto vira `<dl>` aninhado, array de
-   primitivos vira lista de chips, array de objetos vira cards numerados
-   ("Sócios #1", "Sócios #2"...). Isso é o que torna a UI resiliente a
-   mudanças no shape da API sem precisar de deploy.
-5. **`buildSummary`** — extrai os ~10 campos mais úteis (razão social, CNAE,
-   endereço, telefone etc.) para o card de resumo no topo. É a única função
-   com conhecimento do shape específico da API `cnpj.ws`; se a API mudar
-   nomes de campo, é aqui que se ajusta.
-6. **`App`** — estado (`cnpjInput`, `data`, `loading`, `error`, `showRaw`,
-   `copied`), fetch para `https://publica.cnpj.ws/cnpj/{14 dígitos}`, e o
-   JSX da página.
+## Regras de comportamento
 
-## Convenções e decisões que importam
+1. Antes de qualquer mudança não-trivial (que toque mais de um arquivo ou
+   mude comportamento existente), proponha um plano antes de executar.
+2. Nunca adicione bibliotecas externas, CDNs ou pacotes sem consultar
+   antes.
+3. Comentários em português. Comentários explicam o "porquê" do código,
+   não o "o quê".
+4. Antes de criar arquivo novo além de `src/App.jsx`, `src/index.css` e
+   `src/main.jsx`, justifique por que ele precisa existir.
+5. Se uma feature pedida conflitar com @PRD.md, avise antes de implementar.
+6. Toda atualização do projeto deve ficar documentada com data e versão,
+   no formato: `Data de Atualização: DD-MM-YYYY_Versão X.XX`.
 
-- **Não há mock de dados no projeto.** Uma versão anterior tinha
-  `MOCK_DATA_EXAMPLE` e um botão "Carregar exemplo offline" — isso existia
-  só para testar visualmente dentro do sandbox de artifact (que bloqueia
-  fetch para domínios externos) e foi removido deliberadamente do projeto
-  real a pedido do usuário. **Não reintroduzir.** Se precisar de uma prévia
-  offline para testar em artifact, criar isso separadamente (ver seção
-  "Preview em Artifact"), nunca dentro de `src/App.jsx`.
-- **Tailwind v3, não v4** — escolhido deliberadamente para usar a config
-  clássica (`tailwind.config.js`, `postcss.config.js`, `@tailwind base/
-  components/utilities`), que é o que foi pedido. Não migrar para v4 sem
-  alinhar antes (a sintaxe de config muda bastante: `@import "tailwindcss"`
-  em vez de diretivas, tema via `@theme` em CSS).
-- **Tema único (dark)** — a UI não tem alternância claro/escuro; é uma
-  escolha deliberada de identidade visual (`bg-slate-950` fixo), não uma
-  omissão.
-- Toda formatação de valor folha é dirigida pelo **nome da chave** via regex
-  simples (`/cnpj/`, `/cep/`, `/capital/i`), não por uma lista fixa de
-  campos conhecidos — é assim que a formatação sobrevive a campos novos.
+## Convenções de código
 
-## Preview em Artifact
+- Funções em camelCase (`formatCEP`); componentes React em PascalCase
+  (`SummaryField`).
+- Projeto é `.jsx` puro, sem TypeScript.
+- Cor sempre via `tailwind.config.js` + variáveis CSS (`--c-*-rgb`), nunca
+  hex direto no JSX — é o que faz o toggle de tema funcionar.
+- Formatação de valores sempre por regex no nome da chave (ver
+  `formatLeaf`), nunca por lista fixa de campos.
 
-Para testar a interface dentro de um artifact do Claude (sem precisar rodar
-`npm run dev`), existe uma réplica standalone em HTML/CSS/JS vanilla (sem
-build, sem React) que reproduz a mesma lógica de `src/App.jsx`. Ela existe
-porque o CSP de artifacts bloqueia fetch para domínios externos como
-`publica.cnpj.ws`, então essa réplica inclui um botão de "carregar dado de
-exemplo" só para demonstração visual — isso é exclusivo do artifact de
-preview e não deve ser copiado de volta para `src/App.jsx`.
+## Como rodar
 
-## O que evitar
-
-- Não adicionar backend, autenticação ou variáveis de ambiente sem que o
-  usuário peça — o projeto é propositalmente client-only.
-- Não trocar a API pública por outra sem confirmar — `publica.cnpj.ws` é a
-  fonte de dados definida no PRD.
-- Não adicionar abstrações (roteamento, gerenciador de estado, componentiza-
-  ção excessiva) para um projeto de uma única tela.
+```bash
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # build de produção em dist/
+```

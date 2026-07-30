@@ -1,5 +1,7 @@
 # PRD — Consulta de CNPJ
 
+Data de Atualização: 30-07-2026_Versão 1.00
+
 ## Problema
 
 Consultar dados cadastrais de uma empresa na Receita Federal normalmente
@@ -59,14 +61,20 @@ usuários.
 - Botão "Copiar JSON" (copia o JSON completo formatado para a área de
   transferência).
 - Botão "Ver JSON bruto" (mostra/esconde o JSON completo em `<pre>`).
+- Botão de alternância de tema (canto superior direito): troca entre a
+  paleta atual (violeta/lavanda, baseada em `DESIGN.md`) e a paleta clássica
+  (slate + teal, usada antes do redesign). A escolha persiste em
+  `localStorage`. Ambas são temas escuros — a troca é só de paleta de cor,
+  não estrutura, tipografia ou espaçamento.
 
 ### Fora do escopo (por decisão, não por esquecimento)
 
-- Sem histórico de buscas, favoritos, ou persistência entre sessões.
+- Sem histórico de buscas, favoritos, ou persistência entre sessões (a
+  única exceção é a escolha de tema, que persiste em `localStorage`).
 - Sem autenticação, contas de usuário, ou multi-tenant.
 - Sem backend/proxy próprio — o front-end chama a API pública diretamente.
-- Sem alternância de tema claro/escuro — a interface é dark por padrão,
-  como identidade visual fixa.
+- Sem modo claro — as duas paletas disponíveis são escuras; a interface
+  nunca usa fundo claro, como identidade visual fixa.
 - Sem internacionalização — textos e formatos (moeda, data) são pt-BR.
 - Sem testes automatizados definidos ainda (ver "Próximos passos").
 

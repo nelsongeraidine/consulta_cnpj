@@ -29,6 +29,11 @@ const IconAlert = (p) => (
     <path d="M12 9v4M12 17h.01" />
   </svg>
 );
+const IconMoon = (p) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...p}>
+    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+  </svg>
+);
 
 // ───────────────────────── Helpers de formatação ─────────────────────────
 function onlyDigits(s) {
@@ -143,7 +148,7 @@ function countLeaves(node) {
 function DynamicValue({ k, value, depth = 0 }) {
   if (Array.isArray(value)) {
     if (value.length === 0) {
-      return <span className="text-slate-500 italic text-sm">Nenhum registro</span>;
+      return <span className="text-lavender/35 italic text-sm">Nenhum registro</span>;
     }
     const allPrimitive = value.every((v) => v === null || typeof v !== "object");
     if (allPrimitive) {
@@ -152,7 +157,7 @@ function DynamicValue({ k, value, depth = 0 }) {
           {value.map((v, i) => (
             <span
               key={i}
-              className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-teal-300"
+              className="px-2 py-0.5 rounded-md bg-surface border border-support/20 text-xs font-mono text-violet-light"
             >
               {formatLeaf(k, v).text}
             </span>
@@ -165,9 +170,9 @@ function DynamicValue({ k, value, depth = 0 }) {
         {value.map((item, i) => (
           <div
             key={i}
-            className="rounded-lg border border-slate-700/70 bg-slate-900/60 p-3"
+            className="rounded-xl border border-support/15 bg-surface/60 p-3"
           >
-            <div className="text-[10px] uppercase tracking-wider text-teal-400/80 font-mono mb-2">
+            <div className="text-[10px] uppercase tracking-wider text-support/80 font-mono mb-2">
               {labelize(k)} #{i + 1}
             </div>
             <DynamicObject obj={item} depth={depth + 1} />
@@ -179,7 +184,7 @@ function DynamicValue({ k, value, depth = 0 }) {
 
   if (value !== null && typeof value === "object") {
     return (
-      <div className="rounded-lg border border-slate-700/50 bg-slate-900/40 p-3">
+      <div className="rounded-xl border border-support/15 bg-surface/50 p-3">
         <DynamicObject obj={value} depth={depth + 1} />
       </div>
     );
@@ -189,10 +194,10 @@ function DynamicValue({ k, value, depth = 0 }) {
   if (f.badge) {
     return (
       <span
-        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
+        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
           f.badge === "ok"
-            ? "bg-teal-500/10 text-teal-300 border border-teal-500/30"
-            : "bg-slate-700/40 text-slate-400 border border-slate-600/40"
+            ? "bg-violet-mid/15 text-violet-light border border-violet-mid/40"
+            : "bg-surface text-lavender/45 border border-support/15"
         }`}
       >
         {f.text}
@@ -201,7 +206,7 @@ function DynamicValue({ k, value, depth = 0 }) {
   }
   return (
     <span
-      className={`text-sm ${f.muted ? "text-slate-500 italic" : "text-slate-200"} ${
+      className={`text-sm break-words ${f.muted ? "text-lavender/35 italic" : "text-lavender/90"} ${
         f.mono ? "font-mono" : ""
       }`}
     >
@@ -213,13 +218,13 @@ function DynamicValue({ k, value, depth = 0 }) {
 function DynamicObject({ obj, depth = 0 }) {
   const entries = Object.entries(obj || {});
   if (entries.length === 0) {
-    return <span className="text-slate-500 italic text-sm">Objeto vazio</span>;
+    return <span className="text-lavender/35 italic text-sm">Objeto vazio</span>;
   }
   return (
     <dl className="grid gap-x-4 gap-y-2" style={{ gridTemplateColumns: "minmax(140px, auto) 1fr" }}>
       {entries.map(([k, v]) => (
         <React.Fragment key={k}>
-          <dt className="text-xs font-mono text-slate-400 pt-0.5 self-start">{labelize(k)}</dt>
+          <dt className="text-xs font-mono text-lavender/55 pt-0.5 self-start">{labelize(k)}</dt>
           <dd className="min-w-0">
             <DynamicValue k={k} value={v} depth={depth} />
           </dd>
@@ -232,12 +237,12 @@ function DynamicObject({ obj, depth = 0 }) {
 // ───────────────────────── Card de resumo curado ─────────────────────────
 function SummaryField({ label, value, mono }) {
   return (
-    <div>
-      <div className="text-[10px] uppercase tracking-wider text-slate-500 font-mono mb-0.5">
+    <div className="min-w-0">
+      <div className="text-[10px] uppercase tracking-wider text-lavender/45 font-mono mb-0.5">
         {label}
       </div>
-      <div className={`text-sm text-slate-100 ${mono ? "font-mono" : ""}`}>
-        {value || <span className="text-slate-600 italic">—</span>}
+      <div className={`text-sm text-lavender break-words ${mono ? "font-mono" : ""}`}>
+        {value || <span className="text-lavender/30 italic">—</span>}
       </div>
     </div>
   );
@@ -273,6 +278,8 @@ function buildSummary(data) {
 }
 
 // ───────────────────────── App principal ─────────────────────────
+const THEME_KEY = "consulta-cnpj-theme";
+
 export default function App() {
   const [cnpjInput, setCnpjInput] = useState("");
   const [data, setData] = useState(null);
@@ -280,6 +287,18 @@ export default function App() {
   const [error, setError] = useState(null);
   const [showRaw, setShowRaw] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") return "violet";
+    return localStorage.getItem(THEME_KEY) === "classic" ? "classic" : "violet";
+  });
+
+  const toggleTheme = () => {
+    setTheme((t) => {
+      const next = t === "violet" ? "classic" : "violet";
+      localStorage.setItem(THEME_KEY, next);
+      return next;
+    });
+  };
 
   const digits = onlyDigits(cnpjInput);
   const isValidLength = digits.length === 14;
@@ -334,44 +353,55 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
-      <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
+    <div data-theme={theme} className="min-h-screen bg-ink text-lavender font-sans transition-colors duration-300">
+      <div className="max-w-3xl mx-auto px-5 sm:px-10 py-8 sm:py-16">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-2 text-teal-400 text-xs font-mono uppercase tracking-widest mb-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
-            Receita Federal · Dados Públicos
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="flex items-center gap-2 text-support text-xs font-mono uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-support animate-pulse" />
+              Receita Federal · Dados Públicos
+            </div>
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface border border-support/15 hover:bg-support/10 text-xs font-medium text-lavender/70 transition shrink-0"
+              aria-label={theme === "violet" ? "Mudar para o tema clássico" : "Mudar para o tema atual"}
+              title={theme === "violet" ? "Mudar para o tema clássico" : "Mudar para o tema atual"}
+            >
+              <IconMoon className="w-3.5 h-3.5" />
+              {theme === "violet" ? "Clássico" : "Atual"}
+            </button>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-3xl sm:text-4xl font-normal sm:font-light tracking-tight text-lavender text-balance">
             Consulta de CNPJ
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-lavender/70 text-sm mt-1.5">
             Fonte: publica.cnpj.ws — API pública, sem autenticação.
           </p>
         </div>
 
         {/* Barra de busca */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3 sm:p-4 mb-6">
+        <div className="rounded-2xl border border-support/15 bg-surface p-3 sm:p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
-              <IconSearch className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <IconSearch className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-lavender/40" />
               <input
                 value={cnpjInput}
                 onChange={handleInput}
                 onKeyDown={handleKeyDown}
                 placeholder="00.000.000/0000-00"
                 inputMode="numeric"
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-3 py-2.5 text-sm font-mono placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition"
+                className="w-full bg-ink border border-support/25 rounded-full pl-9 pr-3 py-2.5 text-sm font-mono placeholder-lavender/30 focus:outline-none focus:ring-2 focus:ring-violet-mid/40 focus:border-violet-mid/60 transition"
               />
             </div>
             <button
               onClick={handleConsultar}
               disabled={loading || !isValidLength}
-              className="px-5 py-2.5 rounded-lg bg-teal-500 text-slate-950 font-semibold text-sm hover:bg-teal-400 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+              className="btn-cta px-6 py-2.5 rounded-full font-semibold text-sm disabled:bg-surface disabled:text-lavender/30 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
-                  <span className="w-3.5 h-3.5 border-2 border-slate-950/40 border-t-slate-950 rounded-full animate-spin" />
+                  <span className="w-3.5 h-3.5 border-2 border-ink/40 border-t-ink rounded-full animate-spin" />
                   Consultando…
                 </>
               ) : (
@@ -383,40 +413,40 @@ export default function App() {
 
         {/* Erro */}
         {error && (
-          <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 flex items-start gap-2.5">
-            <IconAlert className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-            <p className="text-sm text-red-300">{error}</p>
+          <div className="mb-6 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 flex items-start gap-2.5">
+            <IconAlert className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <p className="text-sm text-rose-300">{error}</p>
           </div>
         )}
 
         {/* Loading skeleton */}
         {loading && (
           <div className="space-y-3 animate-pulse">
-            <div className="h-24 rounded-xl bg-slate-900/60 border border-slate-800" />
-            <div className="h-40 rounded-xl bg-slate-900/60 border border-slate-800" />
+            <div className="h-24 rounded-2xl bg-surface/70 border border-support/10" />
+            <div className="h-40 rounded-2xl bg-surface/70 border border-support/10" />
           </div>
         )}
 
         {/* Resultado */}
         {data && !loading && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-rise-in">
             {/* Card resumo */}
-            <div className="rounded-xl border border-slate-800 bg-gradient-to-b from-slate-900 to-slate-900/60 p-5">
+            <div className="rounded-2xl border border-support/15 bg-surface p-6">
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div>
-                  <h2 className="text-lg font-semibold text-white leading-tight">
+                  <h2 className="text-lg font-medium text-lavender leading-tight text-balance">
                     {summary.razaoSocial || "Razão social não informada"}
                   </h2>
                   {summary.fantasia && (
-                    <p className="text-sm text-slate-400 mt-0.5">{summary.fantasia}</p>
+                    <p className="text-sm text-lavender/60 mt-0.5">{summary.fantasia}</p>
                   )}
                 </div>
                 {summary.situacao && (
                   <span
                     className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold ${
                       /ativ/i.test(summary.situacao)
-                        ? "bg-teal-500/15 text-teal-300 border border-teal-500/30"
-                        : "bg-red-500/15 text-red-300 border border-red-500/30"
+                        ? "bg-violet-mid/15 text-violet-light border border-violet-mid/40"
+                        : "bg-rose-500/15 text-rose-300 border border-rose-500/30"
                     }`}
                   >
                     {summary.situacao}
@@ -424,7 +454,7 @@ export default function App() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-800">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-support/15">
                 <SummaryField label="CNPJ" value={summary.cnpj} mono />
                 <SummaryField label="CNAE" value={summary.cnae} />
                 <SummaryField label="Cidade/UF" value={summary.cidadeUf} />
@@ -440,18 +470,18 @@ export default function App() {
             </div>
 
             {/* Barra de ações / contador */}
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3">
-              <div className="text-xs font-mono text-slate-400">
-                <span className="text-teal-400 font-semibold">{stats.filled}</span>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-support/15 bg-surface px-4 py-3">
+              <div className="text-xs font-mono text-lavender/60">
+                <span className="text-support font-semibold">{stats.filled}</span>
                 <span> / {stats.total} campos preenchidos</span>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={handleCopy}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium transition"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface border border-support/15 hover:bg-support/10 text-xs font-medium transition"
                 >
                   {copied ? (
-                    <IconCheck className="w-3.5 h-3.5 text-teal-400" />
+                    <IconCheck className="w-3.5 h-3.5 text-support" />
                   ) : (
                     <IconCopy className="w-3.5 h-3.5" />
                   )}
@@ -459,7 +489,7 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setShowRaw((s) => !s)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium transition"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface border border-support/15 hover:bg-support/10 text-xs font-medium transition"
                 >
                   <IconCode className="w-3.5 h-3.5" />
                   {showRaw ? "Ocultar JSON" : "Ver JSON bruto"}
@@ -469,14 +499,14 @@ export default function App() {
 
             {/* JSON bruto */}
             {showRaw && (
-              <pre className="rounded-xl border border-slate-800 bg-black/60 p-4 text-xs font-mono text-teal-300 overflow-x-auto max-h-96 overflow-y-auto">
+              <pre className="rounded-2xl border border-support/15 bg-ink p-4 text-xs font-mono text-violet-light overflow-x-auto max-h-96 overflow-y-auto">
                 {JSON.stringify(data, null, 2)}
               </pre>
             )}
 
             {/* Seção dinâmica: todos os campos */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-              <h3 className="text-xs uppercase tracking-widest text-slate-500 font-mono mb-4">
+            <div className="rounded-2xl border border-support/15 bg-surface p-6">
+              <h3 className="text-xs uppercase tracking-widest text-lavender/45 font-mono mb-4">
                 Todos os dados retornados
               </h3>
               <DynamicObject obj={data} />
@@ -486,7 +516,7 @@ export default function App() {
 
         {/* Estado vazio inicial */}
         {!data && !loading && !error && (
-          <div className="text-center py-16 text-slate-600">
+          <div className="text-center py-16 text-lavender/30">
             <IconSearch className="w-8 h-8 mx-auto mb-3 opacity-40" />
             <p className="text-sm">Informe um CNPJ para começar a consulta.</p>
           </div>
